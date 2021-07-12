@@ -23,8 +23,8 @@ base.prepare(engine, reflect=True)
 
 # Save reference to the table
 
-measurement = newBase.classes.measurement
-stations = newBase.classes.station
+measurement = base.classes.measurement
+stations = base.classes.stations
 
 #################################################
 # Flask Setup
@@ -54,8 +54,50 @@ def precipitation():
     session = Session(engine)
 
      # Query all precipitation and dates
-    results = session.query(newBase.measurement, newBase.date).all()
+    results = session.query(base.measurement, base.date).all()
 
     session.close()
 
     return jsonify(results)
+
+
+
+    @app.route("/api/v1.0/stations")
+def station():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of all stations"""
+    # Query all stations
+    results = session.query(base.stations).all()
+
+    session.close()
+
+    return jsonify(results)
+
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of Tobs"""
+    # Query all stations
+    results = session.query(base.stations).all()
+
+    session.close()
+
+     # Create a dictionary from the row data and append to a list of all_passengers
+    all_weather = []
+    for precipitation, station, tobs in results:
+        weather_dict = {}
+        weather_dict["Precipitation"] = precipitation
+        weather_dict["station"] = station
+        weather_dict["tobs"] = tobs
+        all_weather.append(weather_dict)
+
+    return jsonify(all_weather)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
